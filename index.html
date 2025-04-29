@@ -8,9 +8,8 @@
         // Dynamically load the Cast SDK script
         function loadCastSDK() {
             const script = document.createElement('script');
-            script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/1.0/cast_framework.js';
+            script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
             script.onload = function () {
-                // Once SDK is loaded, initialize it
                 console.log("Cast SDK Loaded");
                 initializeCastSDK();
             };
@@ -26,8 +25,6 @@
                 console.log("Cast SDK is available.");
                 
                 const castContext = cast.framework.CastContext.getInstance();
-
-                // Ensure CastContext is available and log the context
                 console.log("Cast Context Initialized:", castContext);
 
                 // Set up CastContext options
@@ -84,6 +81,7 @@
 
         // Load the Cast SDK when the page is ready
         window.onload = function() {
+            console.log("Attempting to load Cast SDK...");
             loadCastSDK();  // Dynamically load the Cast SDK script
         };
     </script>
