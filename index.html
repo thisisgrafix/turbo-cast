@@ -1,130 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Broadcastify Scanner Feeds</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Google Cast SDK -->
-  <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Scanner Feed</title>
+    <script src="https://www.gstatic.com/cast/sdk/libs/sender/1.0/cast_framework.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
+<body>
+    <h1>Broadcastify Scanner Feeds</h1>
+    
+    <button id="castButton">Cast to Google Home</button>
+    
+    <h2>Available Feeds</h2>
+    <ul>
+        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/12345')">Feed 1</button></li>
+        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/67890')">Feed 2</button></li>
+        <!-- Add more feeds here as needed -->
+    </ul>
 
-  <h1 class="text-3xl font-bold text-gray-800 mb-6">📻 Broadcastify Scanner Feeds</h1>
+    <script>
+        // Initialize CastContext
+        const castContext = cast.framework.CastContext.getInstance();
 
-  <!-- Search Bar -->
-  <input id="searchInput"
-         type="text"
-         placeholder="Search feeds by city or name..."
-         class="w-full max-w-md p-3 mb-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+        // Ensure Cast SDK is initialized
+        castContext.setOptions({
+            receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
 
-  <!-- Feed List -->
-  <div id="feed-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-    <!-- Feeds will populate here -->
-  </div>
+        // Cast button listener - let user connect to Google Home
+        const castButton = document.getElementById("castButton");
 
-  <!-- Divider -->
-  <div class="border-t border-gray-300 my-8 w-full max-w-3xl"></div>
+        castButton.addEventListener("click", () => {
+            castContext.requestSession();
+        });
 
-  <!-- Custom Feed Input -->
-  <h2 class="text-2xl font-semibold mb-4 text-gray-800">🎯 Cast a Custom Feed</h2>
-  <div class="flex flex-col md:flex-row items-center gap-4 w-full max-w-3xl">
-    <input id="customUrl"
-           type="url"
-           placeholder="Paste Broadcastify direct feed URL (e.g., https://...)"
-           class="flex-grow p-3 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-    <button onclick="castCustomFeed()"
-            class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded transition">
-      🚀 Cast
-    </button>
-  </div>
+        // Function to cast audio to Google Home
+        function castAudio(feedUrl) {
+            const currentSession = castContext.getCurrentSession();
+            
+            // Check if session exists
+            if (!currentSession) {
+                alert("Please connect to a Google Home first!");
+                return;  // Exit the function if no session exists
+            }
 
-<script>
-  // List of feeds
-  const feeds = [
-    { name: "LA Police Dispatch", url: "https://broadcastify.cdnstream1.com/12345", location: "Los Angeles, CA" },
-    { name: "NYC Fire & EMS", url: "https://broadcastify.cdnstream1.com/67890", location: "New York, NY" },
-    { name: "Chicago Police Zone 8", url: "https://broadcastify.cdnstream1.com/24680", location: "Chicago, IL" },
-    { name: "Seattle Fire Department", url: "https://broadcastify.cdnstream1.com/13579", location: "Seattle, WA" },
-    { name: "Phoenix EMS", url: "https://broadcastify.cdnstream1.com/98765", location: "Phoenix, AZ" }
-    // Add more here easily
-  ];
+            // Set up the media information for the selected feed
+            const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
+            const request = new chrome.cast.media.LoadRequest(mediaInfo);
 
-  // Google Cast Setup
-  window['__onGCastApiAvailable'] = function(isAvailable) {
-    if (isAvailable) {
-      cast.framework.CastContext.getInstance().setOptions({
-        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-      });
-    }
-  };
-
-  // Cast a standard feed
-  function castFeed(url, name) {
-    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    if (!castSession) {
-      alert("Please connect to a Google Home device first.");
-      return;
-    }
-    const mediaInfo = new chrome.cast.media.MediaInfo(url, 'audio/mp3');
-    mediaInfo.metadata = new chrome.cast.media.MusicTrackMediaMetadata();
-    mediaInfo.metadata.title = name;
-
-    const request = new chrome.cast.media.LoadRequest(mediaInfo);
-    castSession.loadMedia(request).then(
-      () => console.log('Load succeed'),
-      (error) => console.error('Error loading media', error)
-    );
-  }
-
-  // Cast a custom feed
-  function castCustomFeed() {
-    const customUrl = document.getElementById('customUrl').value.trim();
-    if (!customUrl.startsWith('http')) {
-      alert('Please enter a valid URL starting with http or https.');
-      return;
-    }
-    castFeed(customUrl, "Custom Broadcastify Feed");
-  }
-
-  // Build feed list
-  const feedList = document.getElementById('feed-list');
-  function renderFeeds(filter = '') {
-    feedList.innerHTML = '';
-    feeds
-      .filter(feed => feed.name.toLowerCase().includes(filter) || feed.location.toLowerCase().includes(filter))
-      .forEach(feed => {
-        const card = document.createElement('div');
-        card.className = 'bg-white shadow-md rounded-lg p-6 flex flex-col justify-between';
-        card.innerHTML = `
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800 mb-2">${feed.name}</h2>
-            <p class="text-gray-600 mb-4">${feed.location}</p>
-          </div>
-          <button onclick="castFeed('${feed.url}', '${feed.name}')"
-            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded mt-auto transition">
-            📡 Cast to Google Home
-          </button>
-        `;
-        feedList.appendChild(card);
-      });
-  }
-
-  // Handle Search Input
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', (e) => {
-    const filter = e.target.value.toLowerCase();
-    renderFeeds(filter);
-  });
-
-  // Initial render
-  renderFeeds();
-</script>
-
+            // Load and start the media
+            currentSession.loadMedia(request).then(
+                () => { console.log('Stream started!'); },
+                (error) => { console.error('Failed to load media:', error); }
+            );
+        }
+    </script>
 </body>
 </html>
