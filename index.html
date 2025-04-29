@@ -19,66 +19,77 @@
     </ul>
 
     <script>
-        // Wait for the Cast SDK to be ready
-        function onCastSDKReady() {
-            const castContext = cast.framework.CastContext.getInstance();
+        // Function to initialize the Cast SDK
+        function initializeCastSDK() {
+            // Ensure the Cast SDK is available
+            if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
+                console.log("Cast SDK is available.");
+                
+                const castContext = cast.framework.CastContext.getInstance();
 
-            // Ensure Cast SDK is initialized and log the status
-            console.log("Cast SDK Initialized:", castContext);
+                // Ensure CastContext is available and log the context
+                console.log("Cast Context Initialized:", castContext);
 
-            // CastContext initialization options
-            castContext.setOptions({
-                receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, // Default receiver app
-                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED // Allow auto-join within the origin
-            });
+                // Set up CastContext options
+                castContext.setOptions({
+                    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, // Default receiver app
+                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED // Allow auto-join within the origin
+                });
 
-            // Cast button listener - let user connect to Google Home
-            const castButton = document.getElementById("castButton");
-            castButton.addEventListener("click", () => {
-                console.log("Requesting session...");
-                castContext.requestSession().then(
-                    (session) => {
-                        console.log("Session successfully started:", session);
-                    },
-                    (error) => {
-                        console.error("Error requesting session:", error);
-                    }
-                );
-            });
-
-            // Function to cast audio to Google Home
-            function castAudio(feedUrl) {
-                const currentSession = castContext.getCurrentSession();
-
-                // Check if session exists
-                if (!currentSession) {
-                    alert("Please connect to a Google Home first!");
-                    return;  // Exit the function if no session exists
-                }
-
-                // Check if the chrome.cast.media object is available
-                if (typeof chrome.cast === 'undefined' || typeof chrome.cast.media === 'undefined') {
-                    console.error("Chrome Cast media API is not available.");
-                    return;
-                }
-
-                // Set up the media information for the selected feed
-                const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
-                const request = new chrome.cast.media.LoadRequest(mediaInfo);
-
-                // Load and start the media
-                currentSession.loadMedia(request).then(
-                    () => { console.log('Stream started!'); },
-                    (error) => { console.error('Failed to load media:', error); }
-                );
+                // Set up the Cast button to request session
+                const castButton = document.getElementById("castButton");
+                castButton.addEventListener("click", () => {
+                    console.log("Requesting session...");
+                    castContext.requestSession().then(
+                        (session) => {
+                            console.log("Session successfully started:", session);
+                        },
+                        (error) => {
+                            console.error("Error requesting session:", error);
+                        }
+                    );
+                });
+            } else {
+                console.error("Cast SDK is not available. Please check if the Cast SDK script is properly loaded.");
             }
         }
 
-        // Ensure the Cast SDK is fully loaded and initialized before proceeding
-        if (window.chrome && chrome.cast) {
-            onCastSDKReady();
-        } else {
-            console.error("Cast SDK is not available.");
+        // Function to cast audio to Google Home
+        function castAudio(feedUrl) {
+            const castContext = cast.framework.CastContext.getInstance();
+            const currentSession = castContext.getCurrentSession();
+
+            // Check if session exists
+            if (!currentSession) {
+                alert("Please connect to a Google Home first!");
+                return;  // Exit the function if no session exists
+            }
+
+            // Check if chrome.cast and chrome.cast.media are available
+            if (typeof chrome.cast === 'undefined' || typeof chrome.cast.media === 'undefined') {
+                console.error("chrome.cast.media is not available.");
+                return;
+            }
+
+            // Set up the media information for the selected feed
+            const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
+            const request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+            // Load and start the media
+            currentSession.loadMedia(request).then(
+                () => { console.log('Stream started!'); },
+                (error) => { console.error('Failed to load media:', error); }
+            );
+        }
+
+        // Initialize Cast SDK when the page is loaded
+        window.onload = function() {
+            // Wait for the Cast SDK to load and initialize it
+            if (typeof cast !== 'undefined' && cast.framework) {
+                initializeCastSDK();
+            } else {
+                console.error("Cast SDK is not loaded properly. Check the script URL.");
+            }
         }
     </script>
 </body>
