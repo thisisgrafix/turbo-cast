@@ -56,6 +56,12 @@
                 return;  // Exit the function if no session exists
             }
 
+            // Check if the chrome.cast.media object is available
+            if (typeof chrome.cast === 'undefined' || typeof chrome.cast.media === 'undefined') {
+                console.error("Chrome Cast media API is not available.");
+                return;
+            }
+
             // Set up the media information for the selected feed
             const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
             const request = new chrome.cast.media.LoadRequest(mediaInfo);
