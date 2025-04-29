@@ -4,11 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Cast SDK</title>
+    <!-- Favicon (optional) -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
+    <!-- Cast SDK -->
+    <script src="https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #0a74da;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Testing Cast SDK</h1>
-    <script src="https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js"></script>
+    <p>Click the button to test casting to your Google Home or Chromecast device.</p>
+    
+    <!-- Cast Button -->
+    <button id="castButton">Cast to Google Home</button>
+    
     <script>
+        // Function to initialize the Cast SDK
         window.onload = function() {
             if (typeof chrome !== 'undefined' && chrome.cast) {
                 console.log('Cast SDK Loaded Successfully');
@@ -16,6 +47,28 @@
                 console.error('Unable to load Cast SDK');
             }
         };
+
+        // Initialize Cast SDK on button click
+        document.getElementById('castButton').addEventListener('click', function() {
+            console.log('Attempting to cast...');
+
+            // Setup casting options
+            var mediaUrl = 'https://streams.broadcastify.com/stream/1151?format=mp3'; // Example audio URL (Broadcastify feed)
+
+            var mediaInfo = new chrome.cast.media.MediaInfo(mediaUrl, 'audio/mp3');
+            var request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+            // Find the Cast device and load media
+            chrome.cast.requestSession(function(session) {
+                session.loadMedia(request, function() {
+                    console.log('Media loaded successfully');
+                }, function(error) {
+                    console.error('Error loading media:', error);
+                });
+            }, function(error) {
+                console.error('Error requesting Cast session:', error);
+            });
+        });
     </script>
 </body>
 </html>
