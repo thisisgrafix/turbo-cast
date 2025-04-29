@@ -21,31 +21,38 @@
 
         // Function to initialize the Cast SDK
         function initializeCastSDK() {
+            // Check if the Cast SDK is available
             if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
                 console.log("Cast SDK is available.");
                 
                 const castContext = cast.framework.CastContext.getInstance();
-                console.log("Cast Context Initialized:", castContext);
 
-                // Set up CastContext options
-                castContext.setOptions({
-                    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, // Default receiver app
-                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED // Allow auto-join within the origin
-                });
+                // Ensure that CastContext is initialized
+                if (castContext) {
+                    console.log("Cast Context Initialized:", castContext);
 
-                // Set up the Cast button to request session
-                const castButton = document.getElementById("castButton");
-                castButton.addEventListener("click", () => {
-                    console.log("Requesting session...");
-                    castContext.requestSession().then(
-                        (session) => {
-                            console.log("Session successfully started:", session);
-                        },
-                        (error) => {
-                            console.error("Error requesting session:", error);
-                        }
-                    );
-                });
+                    // Set up CastContext options
+                    castContext.setOptions({
+                        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, // Default receiver app
+                        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED // Allow auto-join within the origin
+                    });
+
+                    // Set up the Cast button to request session
+                    const castButton = document.getElementById("castButton");
+                    castButton.addEventListener("click", () => {
+                        console.log("Requesting session...");
+                        castContext.requestSession().then(
+                            (session) => {
+                                console.log("Session successfully started:", session);
+                            },
+                            (error) => {
+                                console.error("Error requesting session:", error);
+                            }
+                        );
+                    });
+                } else {
+                    console.error("Cast SDK context is not initialized.");
+                }
             } else {
                 console.error("Cast SDK is not available. Please check if the Cast SDK script is properly loaded.");
             }
