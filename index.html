@@ -3,112 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cast Audio Example</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-        }
-        .container {
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>Test Cast SDK</title>
 </head>
 <body>
-
-<div class="container">
-    <h1>Cast Audio to Google Home</h1>
-    <button id="castButton">Cast to Google Home</button>
-    <br><br>
-    <button onclick="castAudio('https://audio.broadcastify.com/7541/stream.mp3')">Cast Audio Feed</button>
-</div>
-
-<script>
-    // Load the Cast SDK dynamically
-    function loadCastSDK() {
-        const script = document.createElement('script');
-        script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
-
-        script.onload = function () {
-            console.log("Cast SDK Loaded");
-            initializeCastSDK();
+    <h1>Testing Cast SDK</h1>
+    <script src="https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js"></script>
+    <script>
+        window.onload = function() {
+            if (typeof chrome !== 'undefined' && chrome.cast) {
+                console.log('Cast SDK Loaded Successfully');
+            } else {
+                console.error('Unable to load Cast SDK');
+            }
         };
-
-        script.onerror = function () {
-            console.error("Failed to load Cast SDK.");
-        };
-
-        document.head.appendChild(script);
-    }
-
-    // Initialize Cast SDK
-    function initializeCastSDK() {
-        if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.framework) {
-            console.log("Cast SDK is available.");
-
-            const castContext = cast.framework.CastContext.getInstance();
-            castContext.setOptions({
-                receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-            });
-
-            castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, function(event) {
-                console.log("Session State Changed: ", event);
-                if (event.sessionState === cast.framework.SessionState.SESSION_STARTED) {
-                    console.log("Casting started.");
-                }
-            });
-
-        } else {
-            console.error("Cast SDK is not available.");
-        }
-    }
-
-    // Function to cast audio
-    function castAudio(feedUrl) {
-        if (typeof cast !== 'undefined' && cast.framework) {
-            console.log('Casting audio:', feedUrl);
-
-            // Create a media request
-            const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
-            const request = new chrome.cast.media.LoadRequest(mediaInfo);
-
-            // Start casting
-            cast.framework.CastContext.getInstance().getCurrentSession().loadMedia(request)
-                .then(() => {
-                    console.log('Casting started.');
-                })
-                .catch((error) => {
-                    console.error('Error while casting:', error);
-                });
-        } else {
-            console.error('Cast SDK is not available.');
-        }
-    }
-
-    // Load the Cast SDK when the page is ready
-    window.onload = function () {
-        console.log("Attempting to load Cast SDK...");
-        loadCastSDK();
-    };
-</script>
-
+    </script>
 </body>
 </html>
