@@ -3,61 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Scanner Feed</title>
-    <script src="https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js"></script>
-    <script>
-        function loadCastSDK() {
-            const script = document.createElement('script');
-            script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
-            script.onload = function () {
-                console.log("Cast SDK Loaded");
-                initializeCastSDK();
-            };
-            script.onerror = function () {
-                console.error("Failed to load Cast SDK.");
-            };
-            document.head.appendChild(script);
+    <title>Cast Audio Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
         }
-
-        function initializeCastSDK() {
-            if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
-                console.log("Cast SDK is available.");
-                const castContext = cast.framework.CastContext.getInstance();
-                castContext.setOptions({
-                    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-                });
-
-                const castButton = document.getElementById("castButton");
-                castButton.addEventListener("click", () => {
-                    console.log("Requesting session...");
-                    castContext.requestSession().then(
-                        (session) => {
-                            console.log("Session successfully started:", session);
-                        },
-                        (error) => {
-                            console.error("Error requesting session:", error);
-                        }
-                    );
-                });
-            } else {
-                console.error("Cast SDK is not available.");
-            }
+        .container {
+            text-align: center;
         }
-
-        window.onload = function() {
-            console.log("Attempting to load Cast SDK...");
-            loadCastSDK();
-        };
-    </script>
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Broadcastify Scanner Feeds</h1>
+
+<div class="container">
+    <h1>Cast Audio to Google Home</h1>
     <button id="castButton">Cast to Google Home</button>
-    <h2>Available Feeds</h2>
-    <ul>
-        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/12345')">Feed 1</button></li>
-        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/67890')">Feed 2</button></li>
-    </ul>
+    <br><br>
+    <button onclick="castAudio('https://path-to-your-audio-feed.mp3')">Cast Audio Feed</button>
+</div>
+
+<script>
+    function loadCastSDK() {
+        const script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
+        script.onload = function () {
+            console.log("Cast SDK Loaded");
+            initializeCastSDK();
+        };
+        script.onerror = function () {
+            console.error("Failed to load Cast SDK.");
+        };
+        document.head.appendChild(script);
+    }
+
+    function initializeCastSDK() {
+        if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
+            console.log("Cast SDK is available.");
+
+            const castContext = cast.framework.CastContext.getInstance();
+            castContext.setOptions({
+                receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            });
+
+            const castButton = document.getElementById("castButton");
+            castButton.addEventListener("click", () => {
+                console.log("Requesting session...");
+                castContext.requestSession().then(
+                    (session) => {
+                        console.log("Session successfully started:", session);
+                    },
+                    (error) => {
+                        console.error("Error requesting session:", error);
+                    }
+                );
+            });
+        } else {
+            console.error("Cast SDK is not available.");
+        }
+    }
+
+    function castAudio(feedUrl) {
+        if (typeof cast !== 'undefined' && cast.framework) {
+            console.log('Casting audio:', feedUrl);
+
+            // Create a media request
+            const mediaInfo = new chrome.cast.media.MediaInfo(feedUrl, 'audio/mp3');
+            const request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+            // Start casting
+            cast.framework.CastContext.getInstance().getCurrentSession().loadMedia(request)
+                .then(() => {
+                    console.log('Casting started.');
+                })
+                .catch((error) => {
+                    console.error('Error while casting:', error);
+                });
+        } else {
+            console.error('Cast SDK is not available.');
+        }
+    }
+
+    window.onload = function () {
+        console.log("Attempting to load Cast SDK...");
+        loadCastSDK();
+    };
+</script>
+
 </body>
 </html>
