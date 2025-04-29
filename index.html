@@ -41,17 +41,26 @@
 </div>
 
 <script>
-    // Step 1: Load the Cast SDK script dynamically
-    function loadCastSDK() {
+    // Step 1: Load the Cast SDK script dynamically with retry mechanism
+    function loadCastSDK(retries = 3) {
         const script = document.createElement('script');
         script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
+        
         script.onload = function () {
             console.log("Cast SDK Loaded");
             initializeCastSDK();
         };
+        
         script.onerror = function () {
             console.error("Failed to load Cast SDK.");
+            if (retries > 0) {
+                console.log("Retrying to load Cast SDK...");
+                loadCastSDK(retries - 1);
+            } else {
+                alert("Unable to load Cast SDK. Please check your network or try again later.");
+            }
         };
+        
         document.head.appendChild(script);
     }
 
