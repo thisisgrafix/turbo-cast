@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stream Scanner Feed</title>
-    <script src="https://www.gstatic.com/cast/sdk/libs/sender/1.0/cast_framework.js"></script>
-</head>
-<body>
-    <h1>Broadcastify Scanner Feeds</h1>
-    
-    <button id="castButton">Cast to Google Home</button>
-    
-    <h2>Available Feeds</h2>
-    <ul>
-        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/12345')">Feed 1</button></li>
-        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/67890')">Feed 2</button></li>
-        <!-- Add more feeds here as needed -->
-    </ul>
-
     <script>
+        // Dynamically load the Cast SDK script
+        function loadCastSDK() {
+            const script = document.createElement('script');
+            script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/1.0/cast_framework.js';
+            script.onload = function () {
+                // Once SDK is loaded, initialize it
+                console.log("Cast SDK Loaded");
+                initializeCastSDK();
+            };
+            script.onerror = function () {
+                console.error("Failed to load Cast SDK.");
+            };
+            document.head.appendChild(script);
+        }
+
         // Function to initialize the Cast SDK
         function initializeCastSDK() {
-            // Ensure the Cast SDK is available
             if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
                 console.log("Cast SDK is available.");
                 
@@ -82,15 +82,22 @@
             );
         }
 
-        // Initialize Cast SDK when the page is loaded
+        // Load the Cast SDK when the page is ready
         window.onload = function() {
-            // Wait for the Cast SDK to load and initialize it
-            if (typeof cast !== 'undefined' && cast.framework) {
-                initializeCastSDK();
-            } else {
-                console.error("Cast SDK is not loaded properly. Check the script URL.");
-            }
-        }
+            loadCastSDK();  // Dynamically load the Cast SDK script
+        };
     </script>
+</head>
+<body>
+    <h1>Broadcastify Scanner Feeds</h1>
+    
+    <button id="castButton">Cast to Google Home</button>
+    
+    <h2>Available Feeds</h2>
+    <ul>
+        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/12345')">Feed 1</button></li>
+        <li><button onclick="castAudio('https://broadcastify.cdnstream1.com/67890')">Feed 2</button></li>
+        <!-- Add more feeds here as needed -->
+    </ul>
 </body>
 </html>
