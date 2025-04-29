@@ -41,32 +41,26 @@
 </div>
 
 <script>
-    // Step 1: Load the Cast SDK script dynamically with retry mechanism
-    function loadCastSDK(retries = 3) {
+    // Load the Cast SDK dynamically
+    function loadCastSDK() {
         const script = document.createElement('script');
         script.src = 'https://www.gstatic.com/cast/sdk/libs/sender/3.0/cast_framework.js';
-        
+
         script.onload = function () {
             console.log("Cast SDK Loaded");
             initializeCastSDK();
         };
-        
+
         script.onerror = function () {
             console.error("Failed to load Cast SDK.");
-            if (retries > 0) {
-                console.log("Retrying to load Cast SDK...");
-                loadCastSDK(retries - 1);
-            } else {
-                alert("Unable to load Cast SDK. Please check your network or try again later.");
-            }
         };
-        
+
         document.head.appendChild(script);
     }
 
-    // Step 2: Initialize the Cast SDK
+    // Initialize Cast SDK
     function initializeCastSDK() {
-        if (typeof chrome !== 'undefined' && typeof chrome.cast !== 'undefined') {
+        if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.framework) {
             console.log("Cast SDK is available.");
 
             const castContext = cast.framework.CastContext.getInstance();
@@ -75,25 +69,19 @@
                 autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
             });
 
-            // Button to request casting session
-            const castButton = document.getElementById("castButton");
-            castButton.addEventListener("click", () => {
-                console.log("Requesting session...");
-                castContext.requestSession().then(
-                    (session) => {
-                        console.log("Session successfully started:", session);
-                    },
-                    (error) => {
-                        console.error("Error requesting session:", error);
-                    }
-                );
+            castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, function(event) {
+                console.log("Session State Changed: ", event);
+                if (event.sessionState === cast.framework.SessionState.SESSION_STARTED) {
+                    console.log("Casting started.");
+                }
             });
+
         } else {
             console.error("Cast SDK is not available.");
         }
     }
 
-    // Step 3: Define the casting function
+    // Function to cast audio
     function castAudio(feedUrl) {
         if (typeof cast !== 'undefined' && cast.framework) {
             console.log('Casting audio:', feedUrl);
