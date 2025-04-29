@@ -19,20 +19,31 @@
     </ul>
 
     <script>
-        // Initialize CastContext
+        // Ensure Cast SDK is initialized
         const castContext = cast.framework.CastContext.getInstance();
 
-        // Ensure Cast SDK is initialized
+        // CastContext initialization options
         castContext.setOptions({
-            receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID, // Default receiver app
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED // Allow auto-join within the origin
         });
+
+        // Log the context and verify initialization
+        console.log("Cast SDK Initialized:", castContext);
 
         // Cast button listener - let user connect to Google Home
         const castButton = document.getElementById("castButton");
-
         castButton.addEventListener("click", () => {
-            castContext.requestSession();
+            // Request a session to cast to
+            console.log("Requesting session...");
+            castContext.requestSession().then(
+                (session) => {
+                    console.log("Session successfully started:", session);
+                },
+                (error) => {
+                    console.error("Error requesting session:", error);
+                }
+            );
         });
 
         // Function to cast audio to Google Home
